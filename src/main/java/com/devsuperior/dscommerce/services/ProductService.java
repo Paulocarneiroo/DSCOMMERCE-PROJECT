@@ -16,30 +16,39 @@ public class ProductService {
     private ProductRepository repository;
 
     @Transactional(readOnly = true)
-    public ProductDTO findById(Long id) {
+    public ProductDTO findById(Long id) { //GET
         return new ProductDTO(repository.findById(id).get());
         //pega o objeto do optional (repository.findById(id)) usando get()
         //e entra como argumento na instancia do new ProductDTO
     }
 
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = true) //GET
     public Page<ProductDTO> findAll(Pageable pageable) {
         Page<Product> result = repository.findAll(pageable);
         return result.map(x -> new ProductDTO(x));
     }
 
     @Transactional
-    public ProductDTO insert(ProductDTO dto){//inserir
+    public ProductDTO insert(ProductDTO dto){//POST
         Product entity = new Product();
-        entity.setName(dto.getName());
-        entity.setDescription(dto.getDescription());
-        entity.setPrice(dto.getPrice());
-        entity.setImgUrl(dto.getImgUrl());
-
+        copyDtoToEntity(dto, entity);
         entity = repository.save(entity);
-
         return new ProductDTO(entity);
 
     }
 
+    @Transactional
+    public ProductDTO update(Long id, ProductDTO dto){ //PUT
+        Product entity = repository.getReferenceById(id);
+        copyDtoToEntity(dto, entity);
+        entity = repository.save(entity);
+        return new ProductDTO(entity);
+    }
+
+    private void copyDtoToEntity(ProductDTO dto,Product entity){
+        entity.setName(dto.getName());
+        entity.setDescription(dto.getDescription());
+        entity.setPrice(dto.getPrice());
+        entity.setImgUrl(dto.getImgUrl());
+    }
 }
